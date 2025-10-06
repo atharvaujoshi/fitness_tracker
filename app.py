@@ -25,10 +25,9 @@ def init_db():
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-@app.before_first_request
-def create_tables():
-    if not os.path.exists(DATABASE):
-        init_db()
+if not os.path.exists(DATABASE):
+    init_db()
+
 
 @app.route('/')
 def index():
