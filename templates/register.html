@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-user-plus me-2"></i>Create Account</h2>
+            <p class="mb-0">Join Fitness Tracker and start your fitness journey!</p>
+        </div>
+
+        <div class="auth-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </button>
+            </form>
+
+            <div class="text-center">
+                <p class="text-secondary mb-3">Already have an account?</p>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

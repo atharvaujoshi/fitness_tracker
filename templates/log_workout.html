@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Log Workout - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>Log New Workout
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="workoutForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="routine_id" class="form-label">Select Routine</label>
+                            <select class="form-select" id="routine_id" name="routine_id" required>
+                                <option value="">Choose a routine...</option>
+                                {% for routine in routines %}
+                                <option value="{{ routine.id }}">{{ routine.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">Workout Date</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ moment().strftime('%Y-%m-%d') if moment else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-light mb-0">
+                                <i class="fas fa-dumbbell me-2"></i>Exercises
+                            </h5>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addExercise()">
+                                <i class="fas fa-plus me-1"></i>Add Exercise
+                            </button>
+                        </div>
+
+                        <div id="exerciseContainer">
+                            <!-- Exercise rows will be added here -->
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="fas fa-save me-2"></i>Log Workout
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Exercise Templates -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-star me-2"></i>Popular Exercises
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Bench Press')">
+                            Bench Press
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Squat')">
+                            Squat
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Deadlift')">
+                            Deadlift
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Pull-ups')">
+                            Pull-ups
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Overhead Press')">
+                            Overhead Press
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="quickAddExercise('Barbell Row')">
+                            Barbell Row
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let exerciseCount = 0;
+
+// Set today's date by default
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+
+    // Add first exercise row
+    addExercise();
+});
+
+function addExercise(exerciseName = '') {
+    exerciseCount++;
+    const container = document.getElementById('exerciseContainer');
+
+    const exerciseRow = document.createElement('div');
+    exerciseRow.className = 'exercise-row mb-3 p-3 bg-card border rounded';
+    exerciseRow.innerHTML = `
+        <div class="row align-items-end">
+            <div class="col-md-4 mb-2">
+                <label class="form-label">Exercise Name</label>
+                <input type="text" class="form-control" name="exercise_name[]" 
+                       placeholder="e.g., Bench Press" value="${exerciseName}" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label class="form-label">Sets</label>
+                <input type="number" class="form-control" name="sets[]" 
+                       placeholder="3" min="1" max="10" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label class="form-label">Reps</label>
+                <input type="number" class="form-control" name="reps[]" 
+                       placeholder="12" min="1" max="100" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Weight (lbs/kg)</label>
+                <input type="number" class="form-control" name="weight[]" 
+                       placeholder="135" step="0.5" min="0" required>
+            </div>
+            <div class="col-md-1 mb-2">
+                <button type="button" class="btn btn-outline-danger btn-sm w-100" 
+                        onclick="removeExercise(this)" title="Remove Exercise">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(exerciseRow);
+}
+
+function removeExercise(button) {
+    const exerciseRow = button.closest('.exercise-row');
+    const container = document.getElementById('exerciseContainer');
+
+    if (container.children.length > 1) {
+        exerciseRow.remove();
+    } else {
+        alert('You must have at least one exercise in your workout!');
+    }
+}
+
+function quickAddExercise(exerciseName) {
+    addExercise(exerciseName);
+
+    // Scroll to the new exercise
+    const container = document.getElementById('exerciseContainer');
+    const lastExercise = container.lastElementChild;
+    lastExercise.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Focus on sets input
+    const setsInput = lastExercise.querySelector('input[name="sets[]"]');
+    setTimeout(() => setsInput.focus(), 300);
+}
+
+// Form validation
+document.getElementById('workoutForm').addEventListener('submit', function(e) {
+    const exerciseNames = document.querySelectorAll('input[name="exercise_name[]"]');
+    let hasValidExercise = false;
+
+    exerciseNames.forEach(input => {
+        if (input.value.trim()) {
+            hasValidExercise = true;
+        }
+    });
+
+    if (!hasValidExercise) {
+        e.preventDefault();
+        alert('Please add at least one exercise to your workout!');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-dumbbell me-2"></i>Fitness Tracker</h2>
+            <p class="mb-0">Welcome back! Please sign in to continue.</p>
+        </div>
+
+        <div class="auth-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </button>
+            </form>
+
+            <div class="text-center">
+                <p class="text-secondary mb-3">Don't have an account?</p>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </a>
+            </div>
+
+            <div class="mt-4 text-center">
+                <small class="text-secondary">
+                    <strong>Demo Users:</strong><br>
+                    Username: user1 or user2<br>
+                    Password: password123
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

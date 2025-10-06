@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise_name }} Progress - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="text-light mb-0">
+                    <i class="fas fa-chart-line me-2"></i>{{ exercise_name }} Progress
+                </h1>
+                <p class="text-secondary mb-0">Track your improvement over time</p>
+            </div>
+            <a href="{{ url_for('history') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to History
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>Weight Progress Chart
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if progress_data %}
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-4x text-secondary mb-3"></i>
+                        <h4 class="text-light">No Progress Data</h4>
+                        <p class="text-secondary">
+                            Log more workouts with {{ exercise_name }} to see your progress chart.
+                        </p>
+                        <a href="{{ url_for('log_workout') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Log New Workout
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progress Stats -->
+        {% if progress_data %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Progress Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ progress_data|length }}</div>
+                            <div class="stat-label">Total Sessions</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ progress_data|map(attribute='weight')|max|round(1) }}</div>
+                            <div class="stat-label">Max Weight</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ progress_data|map(attribute='weight')|list|first|round(1) }}</div>
+                            <div class="stat-label">Starting Weight</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ ((progress_data|map(attribute='weight')|max) - (progress_data|map(attribute='weight')|list|first))|round(1) }}</div>
+                            <div class="stat-label">Improvement</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed History Table -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>Detailed History
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sets</th>
+                                <th>Reps</th>
+                                <th>Weight</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in progress_data|reverse %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-calendar me-2 text-accent"></i>
+                                    {{ session.date }}
+                                </td>
+                                <td>{{ session.sets }}</td>
+                                <td>{{ session.reps }}</td>
+                                <td>
+                                    <strong class="text-accent">{{ session.weight }}</strong>
+                                </td>
+                                <td>{{ (session.sets * session.reps * session.weight)|round(1) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if progress_data %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+
+    const data = {
+        labels: {{ progress_data|map(attribute='date')|list|tojson }},
+        datasets: [{
+            label: 'Weight (lbs/kg)',
+            data: {{ progress_data|map(attribute='weight')|list|tojson }},
+            borderColor: '#E74C3C',
+            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#E74C3C',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '{{ exercise_name }} Weight Progress',
+                    color: '#FFFFFF',
+                    font: {
+                        size: 16
+                    }
+                },
+                legend: {
+                    labels: {
+                        color: '#FFFFFF'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#8B949E'
+                    },
+                    grid: {
+                        color: '#30363D'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        color: '#FFFFFF'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: '#8B949E'
+                    },
+                    grid: {
+                        color: '#30363D'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Weight',
+                        color: '#FFFFFF'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

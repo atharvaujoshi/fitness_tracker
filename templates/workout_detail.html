@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Workout Details - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="text-light mb-0">
+                    <i class="fas fa-dumbbell me-2"></i>Workout Details
+                </h1>
+                <p class="text-secondary mb-0">{{ workout.date }} • {{ workout.routine_name or 'General Workout' }}</p>
+            </div>
+            <a href="{{ url_for('history') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to History
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Exercises Performed
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if exercises %}
+                    {% for exercise in exercises %}
+                        <div class="exercise-card">
+                            <div class="exercise-header">
+                                <h6 class="exercise-name">{{ exercise.exercise_name }}</h6>
+                                <small class="text-secondary">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ exercise.created_at.split(' ')[1].split('.')[0] if exercise.created_at else 'N/A' }}
+                                </small>
+                            </div>
+                            <div class="exercise-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ exercise.sets }}</div>
+                                    <div class="stat-unit">Sets</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ exercise.reps }}</div>
+                                    <div class="stat-unit">Reps</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ exercise.weight }}</div>
+                                    <div class="stat-unit">Weight</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ (exercise.sets * exercise.reps * exercise.weight)|round(1) }}</div>
+                                    <div class="stat-unit">Volume</div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{{ url_for('exercise_progress', exercise_name=exercise.exercise_name) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-chart-line me-1"></i>View Progress
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <p class="text-secondary">No exercises found for this workout.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Workout Summary -->
+        {% if exercises %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Workout Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ exercises|length }}</div>
+                            <div class="stat-label">Exercises</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ exercises|sum(attribute='sets') }}</div>
+                            <div class="stat-label">Total Sets</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ exercises|sum(attribute='reps') }}</div>
+                            <div class="stat-label">Total Reps</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ exercises|map(attribute='weight')|sum|round(1) }}</div>
+                            <div class="stat-label">Total Weight</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
